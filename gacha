@@ -1,0 +1,79 @@
+#! /usr/bin/env ruby 
+
+require 'optparse'
+
+MAX = 10000
+
+module GachaCore
+  class << self
+    def gacha(probability)
+      threashold = MAX * (probability / 100)
+      hit = Random.rand(1 .. MAX)
+      result = false
+
+      if hit <= threashold then
+        result = true
+      end
+      result
+    end
+
+    def gacha_streak(probability, step, price)
+
+      result = []
+      for cnt in 1..step do
+        result.push(gacha(probability))
+      end
+      result
+    end
+  end
+end
+
+module ResultWriter
+  class << self
+    def write_result(results, probability, step, price)
+      total_price = step * price
+      actual_jackpot_rate = calc_jackpot_rate(results)
+      expected_jackpot_rate = probability * step
+      prefix = <<-EOS
+お目当てのドロップ率 #{probability}%
+実際に出たお目当てドロップ率 #{actual_jackpot_rate}%
+予想されるお目当てドロップ率 #{expected_jackpot_rate}%   （お目当てドロップ率 * 回数）
+#{step}連
+使用金額 #{total_price}円 
+---------------------------------------
+      EOS
+      STDOUT.puts  prefix
+
+      results.each_with_index do |result, idx| 
+        result_text = "はずれ…"
+        idx_text = "#{idx+1}".rjust(8)
+        if result then
+          result_text = "あたり！"
+        end
+        output_text = " #{idx_text}\s連 \t -> \t #{result_text}"
+        STDOUT.puts output_text
+      end
+
+    end
+
+    def calc_jackpot_rate(results)
+      jackpots = results.select { |result| result == true}
+
+      jackpots.size.to_f / results.size.to_f * 100
+    end
+  end
+end
+
+probability = 3.0
+step = 10
+price = 300
+
+opt = OptionParser.new
+opt.on('-d', '--drop PROBABILITY', 'set probability') { |v| probability = v.to_f }
+opt.on('-s', '--step STEP', 'set steps') { |v| step = v.to_i }
+opt.on('-p', '--price PRICE', 'set price') { |v| price = v.to_i }
+opt.parse(ARGV)
+
+result = GachaCore.gacha_streak(probability, step, price)
+
+ResultWriter.write_result(result, probability, step, price)
