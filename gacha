@@ -20,7 +20,7 @@ module GachaCore
     def gacha_streak(drop_rate, step, price)
 
       result = []
-      for cnt in 1..step do
+			step.times do
         result.push(gacha(drop_rate))
       end
       result
@@ -39,7 +39,7 @@ module ResultWriter
 お目当てのドロップ率 #{drop_rate}%
 実際に出たお目当てドロップ率 #{actual_jackpot_rate}%
 予想されるお目当てドロップ率（お目当てドロップ率 * 回数） #{expected_jackpot_rate}%   
-何連ガチャ #{step}連
+連続数 #{step}連
 使用金額 #{total_price}円 
 
 ----------------------------------------------------------------------------------
@@ -53,9 +53,9 @@ module ResultWriter
         if result then
           result_text = "あたり！"
         end
-				realtime_burned_price = "(#{(idx+1) * price}円)".rjust(12)
+				realtime_burned_price = write_realtime_burned_price(idx, price)
 				realtime_expected_jackpot_rate = "#{calc_realtime_expected_jackpot_rate(idx, drop_rate)}".rjust(7)
-        output_text = " #{idx_text}\s連 \t -> \t #{result_text}\t#{realtime_burned_price}\t期待される出現率 #{realtime_expected_jackpot_rate}%"
+				output_text = " #{idx_text}\s連 -> #{result_text.rjust(5)}\t#{realtime_burned_price}\t期待される出現率 #{realtime_expected_jackpot_rate} %"
         STDOUT.puts output_text
       end
 
@@ -67,6 +67,10 @@ module ResultWriter
       jackpots.size.to_f / results.size.to_f * 100
     end
 
+		def write_realtime_burned_price(idx, price)
+			calced = "#{(idx+1) * price}".rjust(7)
+			"(#{calced} 円)"
+		end
 		def calc_realtime_expected_jackpot_rate(idx, drop_rate)
 			(idx+1) * drop_rate
 		end
