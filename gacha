@@ -6,8 +6,8 @@ MAX = 10000
 
 module GachaCore
   class << self
-    def gacha(probability)
-      threashold = MAX * (probability / 100)
+    def gacha(drop_rate)
+      threashold = MAX * (drop_rate / 100)
       hit = Random.rand(1 .. MAX)
       result = false
 
@@ -17,11 +17,11 @@ module GachaCore
       result
     end
 
-    def gacha_streak(probability, step, price)
+    def gacha_streak(drop_rate, step, price)
 
       result = []
       for cnt in 1..step do
-        result.push(gacha(probability))
+        result.push(gacha(drop_rate))
       end
       result
     end
@@ -30,17 +30,20 @@ end
 
 module ResultWriter
   class << self
-    def write_result(results, probability, step, price)
+    def write_result(results, drop_rate, step, price)
       total_price = step * price
       actual_jackpot_rate = calc_jackpot_rate(results)
-      expected_jackpot_rate = probability * step
+      expected_jackpot_rate = drop_rate * step
       prefix = <<-EOS
-お目当てのドロップ率 #{probability}%
+
+お目当てのドロップ率 #{drop_rate}%
 実際に出たお目当てドロップ率 #{actual_jackpot_rate}%
-予想されるお目当てドロップ率 #{expected_jackpot_rate}%   （お目当てドロップ率 * 回数）
-#{step}連
+予想されるお目当てドロップ率（お目当てドロップ率 * 回数） #{expected_jackpot_rate}%   
+何連ガチャ #{step}連
 使用金額 #{total_price}円 
----------------------------------------
+
+----------------------------------------------------------------------------------
+
       EOS
       STDOUT.puts  prefix
 
@@ -50,7 +53,9 @@ module ResultWriter
         if result then
           result_text = "あたり！"
         end
-        output_text = " #{idx_text}\s連 \t -> \t #{result_text}"
+				realtime_burned_price = "(#{(idx+1) * price}円)".rjust(12)
+				realtime_expected_jackpot_rate = "#{calc_realtime_expected_jackpot_rate(idx, drop_rate)}".rjust(7)
+        output_text = " #{idx_text}\s連 \t -> \t #{result_text}\t#{realtime_burned_price}\t期待される出現率 #{realtime_expected_jackpot_rate}%"
         STDOUT.puts output_text
       end
 
@@ -61,19 +66,26 @@ module ResultWriter
 
       jackpots.size.to_f / results.size.to_f * 100
     end
+
+		def calc_realtime_expected_jackpot_rate(idx, drop_rate)
+			(idx+1) * drop_rate
+		end
+
+		def color_decide(result)
+		end
   end
 end
 
-probability = 3.0
+drop_rate = 3.0
 step = 10
 price = 300
 
 opt = OptionParser.new
-opt.on('-d', '--drop PROBABILITY', 'set probability') { |v| probability = v.to_f }
+opt.on('-d', '--drop DROP_RATE', 'set drop_rate') { |v| drop_rate = v.to_f }
 opt.on('-s', '--step STEP', 'set steps') { |v| step = v.to_i }
 opt.on('-p', '--price PRICE', 'set price') { |v| price = v.to_i }
 opt.parse(ARGV)
 
-result = GachaCore.gacha_streak(probability, step, price)
+result = GachaCore.gacha_streak(drop_rate, step, price)
 
-ResultWriter.write_result(result, probability, step, price)
+ResultWriter.write_result(result, drop_rate, step, price)
