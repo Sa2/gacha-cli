@@ -13,7 +13,7 @@ Ruby 2.3.1+
 
 ### params
 
-- `-d`, `--drop` : drop rate
-- `-s`, `--step` : cycle times
-- `-p`, `--price` : 1 time price
+- `-d`, `--drop` : ドロップ率
+- `-s`, `--step` : ガチャを回す回数
+- `-p`, `--price` : 1回の金額
 
