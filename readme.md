@@ -7,8 +7,9 @@ Ruby 2.3.1+
 
 ## Usage
 
+```
 ./gacha --drop 1.0 --step 10 --price 300
-
+```
 
 ### params
 
