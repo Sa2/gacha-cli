@@ -5,9 +5,9 @@
 Ruby 2.3.1+
 
 
-## How to use
+## Usage
 
-./gacha -d 1.0 -s 10 -p 300
+./gacha --drop 1.0 --step 10 --price 300
 
 
 ### params
